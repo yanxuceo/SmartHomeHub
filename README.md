@@ -1,0 +1,1 @@
+Build a Raspberry Pi based smart home hub. 
