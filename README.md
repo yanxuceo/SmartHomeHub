@@ -22,3 +22,10 @@ sudo apt-get install lame
 
 sudo pip install numpy openai
 ```
+
+#### Test Azure TTS API for text to speech
+ Dependencies installation for 
+```
+pip install azure-cognitiveservices-speech
+pip install elementpath
+```
