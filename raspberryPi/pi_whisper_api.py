@@ -12,8 +12,8 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 # Set the audio parameters
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
-RATE = 44100
-CHUNK = 1024
+RATE = 16000
+CHUNK = 2048
 SILENCE_THRESHOLD = 500  # Silence threshold
 SPEECH_END_TIME = 1.0  # Time of silence to mark the end of speech
 
@@ -56,7 +56,6 @@ while True:
         print("End of speech detected.")
         break
 
-
 # Stop Recording
 stream.stop_stream()
 stream.close()
@@ -64,24 +63,22 @@ audio.terminate()
 
 print("Finished recording.")
 
-# Save the recorded data as a byte array
-audio_data = b''.join(frames)
+combined_audio_data = b''.join(frames)
 
-# Save the recorded data as a WAV file
-with wave.open("temp_audio_file.wav", "wb") as wf:
-    wf.setnchannels(CHANNELS)
-    wf.setsampwidth(audio.get_sample_size(FORMAT))
-    wf.setframerate(RATE)
-    wf.writeframes(b''.join(frames))
+# Convert raw data to an AudioSegment object
+audio_segment = AudioSegment(
+    data=combined_audio_data,
+    sample_width=audio.get_sample_size(FORMAT),
+    frame_rate=RATE,
+    channels=CHANNELS
+)
 
-
-# Convert the WAV file to MP3
-sound = AudioSegment.from_wav("temp_audio_file.wav")
-sound.export("temp_audio_file.mp3", format="mp3")
+# Export as a compressed MP3 file with a specific bitrate
+audio_segment.export("output_audio_file.mp3", format="mp3", bitrate="32k")
 
 
 # Open the saved file to send to the API
-with open("temp_audio_file.wav", "rb") as f:
+with open("output_audio_file.mp3", "rb") as f:
     transcript = openai.Audio.transcribe("whisper-1", f)
 
 
