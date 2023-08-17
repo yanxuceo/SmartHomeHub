@@ -2,7 +2,7 @@ import os
 
 import azure.cognitiveservices.speech as speechsdk
 import xml.etree.ElementTree as ET
-
+import argparse
 
 def remove_namespace_prefixes(element, keep_mstts=False):
     for child in element.iter():
@@ -220,12 +220,25 @@ def generate_audio(updated_ssml, file_name):
     stream.save_to_wav_file(file_name)   
 
 
-# run a test
-text = 'Hello World!'
-voice_name = 'en-US-SaraNeural'
-radio_speed = '1.0'
-emotion = 'excited'
-emotion_degree = '1.0'
+# Command line arguments parsing
+parser = argparse.ArgumentParser(description='Azure TTS Testing')
+parser.add_argument('--text', required=True, help='Text to be converted to speech')
+parser.add_argument('--voice_name', default='en-US-SaraNeural', help='Voice name for TTS')
+parser.add_argument('--radio_speed', default='1.0', help='Radio speed for TTS')
+parser.add_argument('--emotion', default='excited', help='Emotion for TTS')
+parser.add_argument('--emotion_degree', default='1.0', help='Degree of emotion for TTS')
+parser.add_argument('--output_file', default='output.wav', help='Output file name for the generated audio')
+
+args = parser.parse_args()
+
+# Extracting command line arguments
+text = args.text
+voice_name = args.voice_name
+radio_speed = args.radio_speed
+emotion = args.emotion
+emotion_degree = args.emotion_degree
+output_file = args.output_file
+
 
 # adjust voice properties
 updated_ssml = modify_ssml(ssml, voice_name, voice_name, emotion, emotion_degree, radio_speed, "", text)
