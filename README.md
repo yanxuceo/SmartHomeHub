@@ -10,7 +10,7 @@ I plan to build a pi based smart home hub which can help me better organize my l
 Step by step, design, implement, and test each module. 
 
 #### Test Whisper API for speech recognition 
-Dependencies installation for 
+Dependencies installation 
 ```
 sudo apt-get update 
 sudo apt-get upgrade 
@@ -23,9 +23,28 @@ sudo apt-get install lame
 sudo pip install numpy openai
 ```
 
-#### Test Azure TTS API for text to speech
- Dependencies installation for 
+Run the code
 ```
+python3 pi_whisper_api.py
+
+//it will wait for active audio input and detect audio ending
+```
+
+#### Test Azure TTS API for text to speech
+Dependencies installation 
+```
+//Generated audio play
+sudo apt-get install portaudio19-dev 
+sudo pip install pyaudio
+
+//Azure TTS SDK and xml tree file editing
 pip install azure-cognitiveservices-speech
-pip install elementpath
+pip install elementpath  
+```
+Run your test
+```
+usage: pi_azure_tts_api.py [-h] --text TEXT [--voice_name VOICE_NAME]
+                           [--radio_speed RADIO_SPEED] [--emotion EMOTION]
+                           [--emotion_degree EMOTION_DEGREE]
+                           [--output_file OUTPUT_FILE]
 ```
