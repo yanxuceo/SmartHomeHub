@@ -59,7 +59,7 @@ def delete_notion_page(page_id: str):
     return res
 
 
-# test page reading
+# 1. test page reading
 # pages = get_notion_pages()
 # for page in pages:
 #     page_id = page["id"]
@@ -70,7 +70,7 @@ def delete_notion_page(page_id: str):
 #     print(name, body_weight, date)
 
 
-# test page creation
+# 2. test page creation
 # name = "Lisa"
 # body_weight = 55.5
 # record_date = datetime.now().strftime("%Y-%m-%d")
@@ -83,5 +83,5 @@ def delete_notion_page(page_id: str):
 # create_notion_page(data)
 
 
-# page_id = ""
+# 3. page_id = ""
 # delete_notion_page(page_id)
