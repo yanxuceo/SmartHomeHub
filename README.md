@@ -49,5 +49,9 @@ usage: pi_azure_tts_api.py [-h] --text TEXT [--voice_name VOICE_NAME]
                            [--output_file OUTPUT_FILE]
 ```
 
-#### Test Notion Database item creation/update/delete
-<img src="img/notion_database_test" alt="Alt Text" width="200" height="200"/>
+#### Test Notion Database 
+This [tutorial](https://www.youtube.com/watch?v=M1gu9MDucMA) helped me. Tested Database page creation/query/update/delete. 
+[Here](https://www.notion.so/my-integrations) to create New Notion integrations.
+
+My Notion page:
+<img src="img/notion_database_test.png" alt="Alt Text" />
