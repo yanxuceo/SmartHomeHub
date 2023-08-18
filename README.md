@@ -48,3 +48,6 @@ usage: pi_azure_tts_api.py [-h] --text TEXT [--voice_name VOICE_NAME]
                            [--emotion_degree EMOTION_DEGREE]
                            [--output_file OUTPUT_FILE]
 ```
+
+#### Test Notion Database item creation/update/delete
+<img src="img/notion_database_test" alt="Alt Text" width="200" height="200"/>
