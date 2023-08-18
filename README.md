@@ -55,3 +55,7 @@ This [tutorial](https://www.youtube.com/watch?v=M1gu9MDucMA) helped me. Tested D
 
 My Notion page:
 <img src="img/notion_database_test.png" alt="Alt Text" />
+
+#### Test OpenAI Function Calling
+Check out what is [Function Calling](https://openai.com/blog/function-calling-and-other-api-updates).
+This [blog](https://zhuanlan.zhihu.com/p/637002733?utm_id=0) helped me.
