@@ -3,9 +3,24 @@ import os
 import openai
 import json
 
+from datetime import datetime, timezone
+import pi_notion_api
+
 
 def record_my_body_weight(weight: str):
     print(f"write my weight {weight} into notion page.")
+
+    name = "Xu Dong"
+    body_weight = float(weight)
+    record_date = datetime.now().strftime("%Y-%m-%d")
+
+    data = {
+        "Name": {"title": [{"text": {"content": name}}]},
+        "Body weight": {"number": body_weight},
+        "Date": {"date": {"start": record_date, "end": None}}
+    }
+    pi_notion_api.create_notion_page(data)
+
 
 
 def openai_function_call(query):
