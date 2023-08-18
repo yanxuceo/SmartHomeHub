@@ -48,6 +48,7 @@ def openai_function_call(query):
     #return response_message
 
 
-print(openai_function_call("record my body weight 70.5"))
 
-
+# Example usage of the function
+if __name__ == '__main__':
+    print(openai_function_call("record my body weight 70.5"))
