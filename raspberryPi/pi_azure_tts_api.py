@@ -198,6 +198,24 @@ def play_audio(filename):
 
 
 
+def azure_tts_run(text: str):
+    voice_name = "en-US-SaraNeural"
+    radio_speed = "1.0"
+    emotion = "friendly"
+    emotion_degree = "1.2"
+    output_file = "output.wav"
+
+    # adjust voice properties
+    updated_ssml = modify_ssml(ssml, voice_name, voice_name, emotion, emotion_degree, radio_speed, "", text)                
+    generate_audio(updated_ssml, output_file)    
+
+    # play the generated audio
+    play_audio(output_file)
+
+        
+
+
+
 # Example usage of the function
 if __name__ == '__main__':
     # Command line arguments parsing
@@ -205,7 +223,7 @@ if __name__ == '__main__':
     parser.add_argument('--text', required=True, help='Text to be converted to speech')
     parser.add_argument('--voice_name', default='en-US-SaraNeural', help='Voice name for TTS')
     parser.add_argument('--radio_speed', default='1.0', help='Radio speed for TTS')
-    parser.add_argument('--emotion', default='excited', help='Emotion for TTS')
+    parser.add_argument('--emotion', default='friendly', help='Emotion for TTS')
     parser.add_argument('--emotion_degree', default='1.0', help='Degree of emotion for TTS')
     parser.add_argument('--output_file', default='output.wav', help='Output file name for the generated audio')
 
@@ -225,7 +243,3 @@ if __name__ == '__main__':
 
     # play the generated audio
     play_audio('output.wav')
-
-        
-
-
