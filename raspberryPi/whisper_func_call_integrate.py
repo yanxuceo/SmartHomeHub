@@ -5,8 +5,10 @@
 
 import pi_whisper_api
 import pi_openai_function_call
+import pi_azure_tts_api
 
 
 
 transcription = pi_whisper_api.get_transcription_from_whisper()
-pi_openai_function_call.openai_function_call(transcription)
+response = pi_openai_function_call.openai_function_call(transcription)
+pi_azure_tts_api.azure_tts_run(response)
