@@ -164,39 +164,27 @@ def generate_audio(updated_ssml, file_name):
     stream.save_to_wav_file(file_name)   
 
 
-def play_audio(filename):
-    """
-    Play an audio file with a given filename using PyAudio and wave libraries.
+
+# Adding a AudioPlayer class to keep audio device open for high-freq audio play
+class AudioPlayer:
+    def __init__(self):
+        self.p = pyaudio.PyAudio()
+        self.stream = self.p.open(format=self.p.get_format_from_width(2),
+                                  channels=1,
+                                  rate=16000,
+                                  output=True)
+
+    def play(self, filename):
+        with wave.open(filename, 'rb') as wf:
+            self.stream.write(wf.readframes(wf.getnframes()))
     
-    Parameters:
-    filename (str): The file name of the audio file to be played.
-    """
-    # Open the file
-    wf = wave.open(filename, 'rb')
-    
-    # Create an audio object
-    p = pyaudio.PyAudio()
-    
-    # Open stream
-    stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
-                    channels=wf.getnchannels(),
-                    rate=wf.getframerate(),
-                    output=True)
-    
-    # Read and play
-    data = wf.readframes(1024)
-    while data:
-        stream.write(data)
-        data = wf.readframes(1024)
-    
-    # Stop stream
-    stream.stop_stream()
-    stream.close()
-    
-    # Close PyAudio
-    p.terminate()
+    def close(self):
+        self.stream.stop_stream()
+        self.stream.close()
+        self.p.terminate()
 
 
+player = AudioPlayer()
 
 def azure_tts_run(text: str):
     voice_name = "en-US-SaraNeural"
@@ -210,7 +198,7 @@ def azure_tts_run(text: str):
     generate_audio(updated_ssml, output_file)    
 
     # play the generated audio
-    play_audio(output_file)
+    player.play(output_file)
 
         
 
@@ -242,4 +230,4 @@ if __name__ == '__main__':
     generate_audio(updated_ssml, "output.wav")    
 
     # play the generated audio
-    play_audio('output.wav')
+    player.play('output.wav')
