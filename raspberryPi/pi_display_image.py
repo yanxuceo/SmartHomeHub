@@ -1,8 +1,9 @@
 import subprocess
+import os
+
 
 def display_image_on_screen(image_path):
-    subprocess.run(["feh", "--hide-pointer", "-x", "-q", "-B", "grey", "-g", "1920x1080", image_path])
-
+    subprocess.Popen(["./display_image.sh", image_path])
 
 if __name__ == "__main__":
     image_path = "../img/ship.png"
