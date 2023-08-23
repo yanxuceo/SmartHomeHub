@@ -5,7 +5,11 @@ import json
 import requests
 
 from datetime import datetime, timezone
+
 import pi_notion_api
+import pi_azure_tts_api
+from pi_dalleE import generate_image 
+from pi_display_image import display_image_on_screen
 
 # Set your OpenAI API key
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -94,6 +98,21 @@ def openai_function_call(query):
                  },
             },
             "required": ["location"],
+        },
+
+        {
+            "name": "generate_image",
+            "description": "generate image with given prompt description",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "prompt_text": {
+                        "type": "string",
+                        "description": "the description of a desired image, such as: a cat lying on sofa"
+                    },
+                 },
+            },
+            "required": ["prompt_text"],
         }
     ]
 
@@ -112,6 +131,7 @@ def openai_function_call(query):
         available_functions = {
             "get_weather": get_weather,
             "record_my_body_weight": record_my_body_weight,
+            "generate_image": generate_image,
         } 
 
         function_name = response_message["function_call"]["name"]
@@ -155,16 +175,23 @@ def openai_function_call(query):
                 )
 
                 weather_summary_message = second_response["choices"][0]["message"]["content"]
-                return weather_summary_message
+                pi_azure_tts_api.azure_tts_run(weather_summary_message)
+            
+        elif(function_name == "generate_image"):
+            prompt_text = function_args.get('prompt_text')
+            image_name = generate_image(prompt_text)
+            display_image_on_screen(image_name)
+
+        return function_args
     else:
         print("No matching function call found!")    
-        # return None 
+        return None 
 
     
 
 # Example usage of the function
 if __name__ == '__main__':
-    openai_function_call("what's the weather like in Munich?")
+    print(openai_function_call("generate a image of two cats lying on the sofa, in anime style"))
 
     # WeatherStack usage:
     # weather_data = get_weather('Munich')
