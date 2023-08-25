@@ -6,14 +6,14 @@ from datetime import datetime
 
 google_map_api_key = os.getenv("GOOGLEMAP_API_KEY")
 
-def get_directions(origin, destination):
+def get_directions(origin, destination, prefer_mode):
     # Define the endpoint and parameters
     url = "https://maps.googleapis.com/maps/api/directions/json"
     params = {
         "origin": origin,
         "destination": destination,
         "mode": "transit",
-        "transit_mode": "subway",
+        "transit_mode": prefer_mode,
         "transit_routing_preference": "less_walking",
         "key": google_map_api_key  # Replace with your API key
     }
@@ -79,7 +79,9 @@ if __name__ == "__main__":
     # Example usage:
     origin = "Sendlinger Tor,Munich"
     destination = "Hauptbahnhof,Munich"
-    status, directions = get_directions(origin, destination)
+    prefer_mode = "subway"  #bus, subway, train, tram, rail
+
+    status, directions = get_directions(origin, destination, prefer_mode)
 
     if status == "OK":
         parse_directions_data(directions)
