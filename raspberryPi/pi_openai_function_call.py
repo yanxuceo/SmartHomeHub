@@ -57,8 +57,41 @@ def record_my_body_weight(weight: str):
         "Date": {"date": {"start": record_date, "end": None}}
     }
     # create new item in Notion Database
-    pi_notion_api.create_notion_page(data)
+    pi_notion_api.create_notion_page(pi_notion_api.NOTION_BODYWEIGHT_DATABASE_ID, data)
 
+
+def write_shopping_item_to_notion(item: str):
+    record_date = datetime.now().strftime("%Y-%m-%d")
+
+    data = {
+        "Name": {"title": [{"text": {"content": item}}]},
+        "Date": {"date": {"start": record_date, "end": None}}
+    }
+    # create new item in Notion Database
+    pi_notion_api.create_notion_page(pi_notion_api.NOTION_SHOPPING_DATABASE_ID, data)
+
+
+def write_random_memos_to_notion(item: str):
+    record_date = datetime.now().strftime("%Y-%m-%d")
+
+    data = {
+        "Name": {"title": [{"text": {"content": item}}]},
+        "Date": {"date": {"start": record_date, "end": None}}
+    }
+    # create new item in Notion Database
+    pi_notion_api.create_notion_page(pi_notion_api.NOTION_MEMOS_DATABASE_ID, data)
+
+
+
+def get_shopping_items(shopping_item: str):
+    item_list = shopping_item.split(',')
+    for item in item_list:
+        print(item.strip())
+        write_shopping_item_to_notion(item)
+
+
+def record_random_thoughts(memos: str):
+    write_random_memos_to_notion(memos)
 
 
 def openai_function_call(query):
@@ -113,7 +146,37 @@ def openai_function_call(query):
                  },
             },
             "required": ["prompt_text"],
-        }
+        },
+
+        {
+            "name": "get_shopping_items",
+            "description": "Get all the shopping items I would like to buy",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "shopping_items": {
+                        "type": "string",
+                        "description": "a list of the planned shopping items in daily life, such as vegetables, fruits, meat, toilet paper, etc"
+                    },
+                },
+            },
+            "required": ["shopping_items"],
+        },
+
+        {
+            "name": "record_random_thoughts",
+            "description": "Record my random thoughts, memos, reflections, ponderings",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "memos": {
+                        "type": "string",
+                        "description": "some free-brainstorming, random thoughts, memos, e.g, my memos, blabla"
+                    },
+                },
+            },
+            "required": ["memos"],
+        },
     ]
 
     response = openai.ChatCompletion.create(
@@ -132,6 +195,8 @@ def openai_function_call(query):
             "get_weather": get_weather,
             "record_my_body_weight": record_my_body_weight,
             "generate_image": generate_image,
+            "get_shopping_items": get_shopping_items,
+            "record_random_thoughts": record_random_thoughts,
         } 
 
         function_name = response_message["function_call"]["name"]
@@ -145,7 +210,7 @@ def openai_function_call(query):
         elif(function_name == "get_weather") :
             location = function_args.get('location')
             print(f"Run weather function in city {location}")
-    
+
             weather_data = get_weather(location)
             if weather_data is not None:
                 # print(weather_data)
@@ -181,6 +246,15 @@ def openai_function_call(query):
             prompt_text = function_args.get('prompt_text')
             image_name = generate_image(prompt_text)
             display_image_on_screen(image_name)
+        
+
+        elif(function_name == "get_shopping_items"):
+            shopping_items = function_args.get('shopping_items')
+            get_shopping_items(shopping_items)
+
+        elif(function_name == "record_random_thoughts"):
+            notes = function_args.get('memos')
+            record_random_thoughts(notes)
 
         return function_args
     else:
@@ -191,7 +265,7 @@ def openai_function_call(query):
 
 # Example usage of the function
 if __name__ == '__main__':
-    print(openai_function_call("generate a image of two cats lying on the sofa, in anime style"))
+    openai_function_call("my memos, maybe I can integrate telegram bot with notion")
 
     # WeatherStack usage:
     # weather_data = get_weather('Munich')
