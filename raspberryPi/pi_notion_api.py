@@ -5,7 +5,9 @@ from datetime import datetime, timezone
 
 
 NOTION_KEY = os.getenv("NOTION_INTEGRATION_KEY")
-NOTION_DATABASE_ID = os.getenv("NOTION_DATABASE_ID")
+NOTION_BODYWEIGHT_DATABASE_ID = os.getenv("NOTION_BODYWEIGHT_DATABASE_ID")
+NOTION_SHOPPING_DATABASE_ID = os.getenv("NOTION_SHOPPING_DATABASE_ID")
+NOTION_MEMOS_DATABASE_ID = os.getenv("NOTION_MEMOS_DATABASE_ID")
 
 headers = {
     "Authorization": "Bearer " + NOTION_KEY,
@@ -14,8 +16,8 @@ headers = {
 }
 
 
-def get_notion_pages():
-    url = f"https://api.notion.com/v1/databases/{NOTION_DATABASE_ID}/query"
+def get_notion_pages(database_id):
+    url = f"https://api.notion.com/v1/databases/{database_id}/query"
 
     payload = {"page_size": 100}
     response = requests.post(url, json=payload, headers=headers)
@@ -29,10 +31,10 @@ def get_notion_pages():
     return results
 
 
-def create_notion_page(data: dict):
+def create_notion_page(database_id, data: dict):
     create_url = "https://api.notion.com/v1/pages"
 
-    payload = {"parent": {"database_id": NOTION_DATABASE_ID}, "properties": data}
+    payload = {"parent": {"database_id": database_id}, "properties": data}
 
     res = requests.post(create_url, headers=headers, json=payload)
     print(res.status_code)
@@ -60,27 +62,24 @@ def delete_notion_page(page_id: str):
 
 
 # 1. test page reading
-# pages = get_notion_pages()
+# pages = get_notion_pages(NOTION_SHOPPING_DATABASE_ID)
 # for page in pages:
 #     page_id = page["id"]
 #     props = page["properties"]
 #     name = props["Name"]["title"][0]["text"]["content"]
-#     body_weight = props["Body weight"]["number"]
 #     date = props["Date"]["date"]["start"]
-#     print(name, body_weight, date)
+#     print(name, date)
 
 
 # 2. test page creation
-# name = "Lisa"
-# body_weight = 55.5
+# name = "Banana"
 # record_date = datetime.now().strftime("%Y-%m-%d")
 
 # data = {
 #     "Name": {"title": [{"text": {"content": name}}]},
-#     "Body weight": {"number": body_weight},
 #     "Date": {"date": {"start": record_date, "end": None}}
 # }
-# create_notion_page(data)
+# create_notion_page(NOTION_SHOPPING_DATABASE_ID, data)
 
 
 # 3. page_id = ""
