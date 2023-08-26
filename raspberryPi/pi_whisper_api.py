@@ -85,6 +85,18 @@ def get_transcription_from_whisper():
 
 
 
+def get_transcription_from_audio_file(file_name):
+    openai.api_key = os.getenv("OPENAI_API_KEY")
+
+    with open(file_name, "rb") as f:
+        transcript = openai.Audio.transcribe("whisper-1", f)
+
+    # Return the transcript text
+    return transcript['text']
+
+
+
+
 # Example usage of the function
 if __name__ == '__main__':
     transcription = get_transcription_from_whisper()
