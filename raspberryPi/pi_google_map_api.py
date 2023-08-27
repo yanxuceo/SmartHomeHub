@@ -59,19 +59,45 @@ def parse_directions_data(data):
                 transit_details = step["transit_details"]
                 line_info = step["transit_details"]["line"]
 
-                print("departure_stop:", transit_details["departure_stop"]["name"])
-                print("arrival_stop:", transit_details["arrival_stop"]["name"])
+                departure_stop = transit_details["departure_stop"]["name"]
+                arrival_stop = transit_details["arrival_stop"]["name"]
 
-                print("departure_time:", transit_details["departure_time"]["text"])
-                print("arrival_time:", transit_details["arrival_time"]["text"])
+                departure_time = transit_details["departure_time"]["text"]
+                arrival_time = transit_details["arrival_time"]["text"]
 
-                print("headsign:", transit_details["headsign"])
-                print("line:", line_info["short_name"])
+                headsign = transit_details["headsign"]
+                line = line_info["short_name"]
+
+                # Concatenate values into a list
+                result_list = [departure_stop, arrival_stop, departure_time, arrival_time, headsign, line]
+                return result_list
+        
+        return None
 
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON: {e}")
 
 
+
+def print_transit_info(nav_info):
+    print(f"Departure Stop: {nav_info[0]}")
+    print(f"Arrival Stop: {nav_info[1]}")
+    print(f"Departure Time: {nav_info[2]}")
+    print(f"Arrival Time: {nav_info[3]}")
+    print(f"Headsign: {nav_info[4]}")
+    print(f"Line: {nav_info[5]}")
+
+
+def format_transit_info(nav_info):
+    transit_string = (
+        f"Departure Stop: {nav_info[0]}\n"
+        f"Arrival Stop: {nav_info[1]}\n"
+        f"Departure Time: {nav_info[2]}\n"
+        f"Arrival Time: {nav_info[3]}\n"
+        f"Headsign: {nav_info[4]}\n"
+        f"Line: {nav_info[5]}"
+    )
+    return transit_string
 
 
 
@@ -84,7 +110,11 @@ if __name__ == "__main__":
     status, directions = get_directions(origin, destination, prefer_mode)
 
     if status == "OK":
-        parse_directions_data(directions)
+        navi_info = parse_directions_data(directions)
+        if navi_info == None:
+            print("Sorry, we don't get valid data, please try again later")
+        else:
+            print_transit_info(navi_info)
     else:
         print("Error:", status)
    
