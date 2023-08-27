@@ -57,8 +57,14 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(update.message.text)
 
 
-async def voice_memo_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def text_memo_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Echo the user message."""
+    print(update.message.text)
+    response = pi_openai_function_call.openai_function_call(update.message.text)
+    await update.message.reply_text(response)
+
+
+async def voice_memo_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     new_file = await context.bot.get_file(update.message.voice.file_id)
     
     downloaded_file = await new_file.download_to_drive()
@@ -68,9 +74,9 @@ async def voice_memo_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
     convert_oga_to_mp3(orin_file_name, new_filename)
 
     transcript = pi_whisper_api.get_transcription_from_audio_file(new_filename)
-    pi_openai_function_call.openai_function_call(transcript)
+    response = pi_openai_function_call.openai_function_call(transcript)
 
-    await update.message.reply_text("Done!")
+    await update.message.reply_text(response)
 
 
 async def photo_memo_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -91,10 +97,9 @@ def main() -> None:
     application.add_handler(CommandHandler("help", help_command))
 
     # on non command i.e message - echo the message on Telegram
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_memo_handler))
     application.add_handler(MessageHandler(filters.VOICE & ~filters.COMMAND, voice_memo_handler))
     application.add_handler(MessageHandler(filters.PHOTO & ~filters.COMMAND, photo_memo_handler))
-
 
 
     # Run the bot until the user presses Ctrl-C
