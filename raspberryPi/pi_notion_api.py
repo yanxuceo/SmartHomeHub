@@ -38,7 +38,7 @@ def create_notion_page(database_id, data: dict):
 
     res = requests.post(create_url, headers=headers, json=payload)
     print(res.status_code)
-    return res
+    return res.status_code
 
 
 def update_notion_page(page_id: str, data: dict):
