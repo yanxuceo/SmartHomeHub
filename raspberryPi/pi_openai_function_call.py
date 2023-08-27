@@ -197,13 +197,13 @@ def openai_function_call(query):
 
         {
             "name": "record_random_thoughts",
-            "description": "accept messages, which are just random thoughts, memos, reflections, ponderings, usually starting with memo, Memo, memos",
+            "description": "accept messages, which are just random thoughts, memos, reflections, ponderings, that just occurs to me, comes into my mind at any time",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "memos": {
                         "type": "string",
-                        "description": "this usually starts with memo, memos, Memo, following with some random paragraphs. eg. memo, maybe I can make money by selling photo frames"
+                        "description": "my random thoughts, usually starting with memo or it occurs to me, or I am thinking that... eg. memo, maybe I can add weather api into this bot; or I am thinking that..; or it occurs to me that.."
                     },
                 },
             },
