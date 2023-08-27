@@ -60,7 +60,9 @@ def record_my_body_weight(weight: str):
         "Date": {"date": {"start": record_date, "end": None}}
     }
     # create new item in Notion Database
-    return pi_notion_api.create_notion_page(pi_notion_api.NOTION_BODYWEIGHT_DATABASE_ID, data)
+    if pi_notion_api.create_notion_page(pi_notion_api.NOTION_BODYWEIGHT_DATABASE_ID, data) != 200:
+        return "Error"
+    return "Done"
 
 
 
