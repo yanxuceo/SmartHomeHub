@@ -1,4 +1,5 @@
 import os
+import re
 
 import openai
 import json
@@ -8,6 +9,8 @@ from datetime import datetime, timezone
 
 import pi_notion_api
 import pi_azure_tts_api
+import pi_google_map_api
+
 from pi_dalleE import generate_image 
 from pi_display_image import display_image_on_screen
 
@@ -57,7 +60,8 @@ def record_my_body_weight(weight: str):
         "Date": {"date": {"start": record_date, "end": None}}
     }
     # create new item in Notion Database
-    pi_notion_api.create_notion_page(pi_notion_api.NOTION_BODYWEIGHT_DATABASE_ID, data)
+    return pi_notion_api.create_notion_page(pi_notion_api.NOTION_BODYWEIGHT_DATABASE_ID, data)
+
 
 
 def write_shopping_item_to_notion(item: str):
@@ -67,8 +71,10 @@ def write_shopping_item_to_notion(item: str):
         "Name": {"title": [{"text": {"content": item}}]},
         "Date": {"date": {"start": record_date, "end": None}}
     }
-    # create new item in Notion Database
-    pi_notion_api.create_notion_page(pi_notion_api.NOTION_SHOPPING_DATABASE_ID, data)
+   
+    return pi_notion_api.create_notion_page(pi_notion_api.NOTION_SHOPPING_DATABASE_ID, data)  
+       
+
 
 
 def write_random_memos_to_notion(item: str):
@@ -79,24 +85,48 @@ def write_random_memos_to_notion(item: str):
         "Date": {"date": {"start": record_date, "end": None}}
     }
     # create new item in Notion Database
-    pi_notion_api.create_notion_page(pi_notion_api.NOTION_MEMOS_DATABASE_ID, data)
+    return pi_notion_api.create_notion_page(pi_notion_api.NOTION_MEMOS_DATABASE_ID, data)
 
 
 
 def get_shopping_items(shopping_item: str):
-    item_list = shopping_item.split(',')
+    item_list = re.split(',|、', shopping_item)
     for item in item_list:
         print(item.strip())
         write_shopping_item_to_notion(item)
+            
+    return "Done"
 
 
 def record_random_thoughts(memos: str):
-    write_random_memos_to_notion(memos)
+    if write_random_memos_to_notion(memos) != 200:
+        return "Error"
+    return "Done"
 
 
+def get_navigation_info(start_point: str, end_point: str):
+    prefer_mode = "subway"  #bus, subway, train, tram, rail
+
+    status, directions = pi_google_map_api.get_directions(start_point, end_point, prefer_mode)
+
+    if status == "OK":
+        navi_info = pi_google_map_api.parse_directions_data(directions)
+        if navi_info == None:
+            return "Sorry, we don't get valid data, please try again later"
+        else:
+            return pi_google_map_api.format_transit_info(navi_info)
+    else:
+        return "Error:" + status
+    
+
+
+# the Core, to accept query, and manage the execution of function callings
 def openai_function_call(query):
     # send the conversation and available functions to GPT
-    messages=[{"role": "user", "content": query}]
+    messages=[
+        {"role": "system", "content": "Based on my query, you can find the best match to function callings."},
+        {"role": "user", "content": query}
+    ]
 
     functions = [
         {
@@ -165,17 +195,36 @@ def openai_function_call(query):
 
         {
             "name": "record_random_thoughts",
-            "description": "Record my random thoughts, memos, reflections, ponderings",
+            "description": "accept messages, which are just random thoughts, memos, reflections, ponderings, usually starting with memo, Memo, memos",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "memos": {
                         "type": "string",
-                        "description": "some free-brainstorming, random thoughts, memos, e.g, my memos, blabla"
+                        "description": "this usually starts with memo, memos, Memo, following with some random paragraphs. eg. memo, maybe I can make money by selling photo frames"
                     },
                 },
             },
             "required": ["memos"],
+        },
+
+         {
+            "name": "get_navigation_info",
+            "description": "Query real-time public transport information via google maps api",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "start_location": {
+                        "type": "string",
+                        "description": "start location for public transport query, e.g Giesing,Munich"
+                    },
+                    "end_location": {
+                        "type": "string",
+                        "description": "destination, end location for a public transport query, e.g Hauptbahnhof,Munich"
+                    },
+                },
+            },
+            "required": ["start_location", "end_location"],
         },
     ]
 
@@ -197,6 +246,7 @@ def openai_function_call(query):
             "generate_image": generate_image,
             "get_shopping_items": get_shopping_items,
             "record_random_thoughts": record_random_thoughts,
+            "get_navigation_info": get_navigation_info,
         } 
 
         function_name = response_message["function_call"]["name"]
@@ -205,7 +255,7 @@ def openai_function_call(query):
         
         if (function_name == "record_my_body_weight"):
             weight_info = function_args.get('weight_in_kg')
-            record_my_body_weight(weight_info)
+            return record_my_body_weight(weight_info)
 
         elif(function_name == "get_weather") :
             location = function_args.get('location')
@@ -246,15 +296,20 @@ def openai_function_call(query):
             prompt_text = function_args.get('prompt_text')
             image_name = generate_image(prompt_text)
             display_image_on_screen(image_name)
-        
 
         elif(function_name == "get_shopping_items"):
             shopping_items = function_args.get('shopping_items')
-            get_shopping_items(shopping_items)
+            return get_shopping_items(shopping_items)
 
         elif(function_name == "record_random_thoughts"):
             notes = function_args.get('memos')
-            record_random_thoughts(notes)
+            return record_random_thoughts(notes)
+
+        elif(function_name == "get_navigation_info"):
+            start_point = function_args.get("start_location")
+            end_point = function_args.get("end_location")
+            return get_navigation_info(start_point, end_point)
+
 
         return function_args
     else:
@@ -265,7 +320,8 @@ def openai_function_call(query):
 
 # Example usage of the function
 if __name__ == '__main__':
-    openai_function_call("my memos, maybe I can integrate telegram bot with notion")
+    # openai_function_call("my memos, maybe I can integrate telegram bot with notion")
+    print(openai_function_call("memo maybe I can integrate telegram bot with notion"))
 
     # WeatherStack usage:
     # weather_data = get_weather('Munich')
