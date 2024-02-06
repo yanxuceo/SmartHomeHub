@@ -74,7 +74,7 @@ void setup() {
 
     tft.init();
     tft.setRotation(1);
-    tft.setTextSize(2);  
+    tft.setTextSize(3);  
     tft.fillScreen(TFT_BLACK);
 
     displayCurrentState();
@@ -193,6 +193,7 @@ void handle_buttonB_singleClick() {
     case MAIN_MENU_TIMER:
       Serial.println("Resetting timer...");
       // ResetTimer();        // This would reset the timer for the long-seating reminder.
+      timer.reset();
       displayCurrentState(); // Refresh the display to show any changes.
       break;
 
@@ -252,13 +253,13 @@ void handle_buttonB_longClick() {
 
 void displayCurrentState() {
   tft.fillScreen(TFT_BLACK);  // Clear the screen
+  tft.setTextSize(3); // Set a default font size for most menus
 
   switch (currentState) {
     case MAIN_MENU_CURRENT_BAR:
       drawBatteryIndicator(currentWaterLevel, barCount);
       break;
     case MAIN_MENU_TIMER:
-      timer.reset();
       displayTimerMenu();
       break;
     case MAIN_MENU_SYSTEM:
@@ -336,10 +337,39 @@ void updatebarCount() {
   Serial.println(barCount); 
 }
 
+/*
 void displayTimerMenu() {
   String timerStr = timer.getTimerString();
+
+  tft.setTextSize(6);
   
   tft.setCursor(0, 0);
   tft.println(timerStr);
 }
+*/
+
+void displayTimerMenu() {
+    String timerStr = timer.getTimerString(); // The timer string, "00:00"
+
+    // Set the desired font size for the timer display
+    tft.setTextSize(6);
+
+    // Calculate the width and height of the text with the current font settings
+    int textWidth = tft.textWidth(timerStr);
+    int textHeight = tft.fontHeight();
+
+    // Calculate the starting X and Y positions to center the text
+    int startX = (tft.width() - textWidth) / 2;
+    int startY = (tft.height() - textHeight) / 2;
+
+    // Set the cursor to the calculated position
+    tft.setCursor(startX, startY);
+
+    // Optionally, set the text color before drawing
+    tft.setTextColor(TFT_WHITE, TFT_BLACK); // White text with a black background to overwrite previous text
+
+    // Draw the text on the screen
+    tft.println(timerStr);
+}
+
 
