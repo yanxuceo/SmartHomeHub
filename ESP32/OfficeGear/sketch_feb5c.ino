@@ -183,12 +183,11 @@ void handle_buttonB_singleClick() {
     case MAIN_MENU_CURRENT_BAR:
       Serial.println("Increasing water level...");
       waterDisplay.increaseWaterLevel(0.5);
-      displayCurrentState(); // Refresh the display to show any changes.
+      waterDisplay.drawBatteryIndicator();
       break;
 
     case MAIN_MENU_TIMER:
       Serial.println("Resetting timer...");
-      // ResetTimer();        // This would reset the timer for the long-seating reminder.
       timer.reset();
       displayCurrentState(); // Refresh the display to show any changes.
       break;
