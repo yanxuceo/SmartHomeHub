@@ -1,7 +1,8 @@
 #include <TFT_eSPI.h>        // Include for the display
-#include "ButtonHandler.h"
 
-TFT_eSPI tft = TFT_eSPI();   // Initialize TFT
+#include "ButtonHandler.h"
+#include "TimerDisplay.h"
+
 
 enum State {
   MAIN_MENU_CURRENT_BAR,
@@ -20,6 +21,10 @@ enum State {
 
   NUM_STATES  // Helper to keep track of the total number of states
 };
+
+
+TFT_eSPI tft = TFT_eSPI();   // Initialize TFT
+
 
 // water tracking submemu options
 const char* waterVolumeOptions[] = {"1L", "1.5L", "2L", "2.5L", "3L"};
@@ -56,6 +61,7 @@ static int barHeight = screenHeight;        // Bar height will be full height of
 
 static float currentWaterLevel = 0.0;
 
+OfficeTimer timer;  // Create an OfficeTimer instance
 
 ButtonHandler buttonA(35); // Example button on pin 35
 ButtonHandler buttonB(0);  // Another button on pin 0
@@ -83,11 +89,25 @@ void setup() {
     buttonB.onPressed(handle_buttonB_singleClick);
     buttonB.onDoublePressed(handle_buttonB_doubleClick);
     buttonB.onLongPressed(handle_buttonB_longClick);
+
+    // Start the timer
+    timer.start();
 }
+
+unsigned long lastTimerUpdate = 0;
+const unsigned long timerUpdateInterval = 500; // Update the display every 1000 milliseconds (1 second)
 
 void loop() {
     buttonA.update();
     buttonB.update();
+
+    unsigned long currentMillis = millis();
+
+    // Check if the Timer Menu is active and if it's time to update the display
+    if (currentState == MAIN_MENU_TIMER && currentMillis - lastTimerUpdate >= timerUpdateInterval) {
+        displayTimerMenu(); // Update the timer display
+        lastTimerUpdate = currentMillis; // Reset the last update time
+    }
 }
 
 int getOptionCount(State state) {
@@ -238,7 +258,8 @@ void displayCurrentState() {
       drawBatteryIndicator(currentWaterLevel, barCount);
       break;
     case MAIN_MENU_TIMER:
-      tft.drawString("Timer", 10, 10, 2);
+      timer.reset();
+      displayTimerMenu();
       break;
     case MAIN_MENU_SYSTEM:
       tft.drawString("System Info", 10, 10, 2);
@@ -258,7 +279,6 @@ void displayCurrentState() {
       tft.drawString("Select seating time", 10, 10, 2);
       tft.drawString(seatingHours[currentOption], 10, 50, 2);
       break;
-
 
     default:
       break;
@@ -315,3 +335,11 @@ void updatebarCount() {
   Serial.print("updated barCount value: ");
   Serial.println(barCount); 
 }
+
+void displayTimerMenu() {
+  String timerStr = timer.getTimerString();
+  
+  tft.setCursor(0, 0);
+  tft.println(timerStr);
+}
+
