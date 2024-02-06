@@ -8,7 +8,6 @@
 
 TFT_eSPI tft = TFT_eSPI();   // Initialize TFT
 
-
 OfficeTimer timer;  // Create an OfficeTimer instance
 WaterLevelDisplay waterDisplay(tft, SCREENWIDTH, SCREENHEIGHT);
 
@@ -17,49 +16,32 @@ ButtonHandler buttonB(0);  // Another button on pin 0
 
 
 void setup() {
-    Serial.begin(115200);
-    buttonA.begin();
-    buttonB.begin();
+  Serial.begin(115200);
+  
+  tft_init();
+  button_init();
+  
+  waterDisplay.setBarCount(5); // Set the total number of bars, default 5
+  waterDisplay.setGap(4);      // Set the gap between bars
 
-    tft.init();
-    tft.setRotation(1);
-    tft.setTextSize(3);  
-    tft.fillScreen(TFT_BLACK);
-
-    waterDisplay.setBarCount(5); // Set the total number of bars, default 5
-    waterDisplay.setGap(4);      // Set the gap between bars
-
-    displayCurrentState();
-
-    buttonA.setDoubleClickDelay(250);
-    buttonB.setDoubleClickDelay(250);
-
-    buttonA.onPressed(handle_buttonA_singleClick);
-    buttonA.onDoublePressed(handle_buttonA_doubleClick);
-    buttonA.onLongPressed(handle_buttonA_longClick);
-
-    buttonB.onPressed(handle_buttonB_singleClick);
-    buttonB.onDoublePressed(handle_buttonB_doubleClick);
-    buttonB.onLongPressed(handle_buttonB_longClick);
-
-    // Start the timer
-    timer.start();
+  displayCurrentState();
+  timer.start();
 }
 
 unsigned long lastTimerUpdate = 0;
 const unsigned long timerUpdateInterval = 500; // Update the display every 1000 milliseconds (1 second)
 
 void loop() {
-    buttonA.update();
-    buttonB.update();
+  buttonA.update();
+  buttonB.update();
 
-    unsigned long currentMillis = millis();
+  unsigned long currentMillis = millis();
 
-    // Check if the Timer Menu is active and if it's time to update the display
-    if (currentState == MAIN_MENU_TIMER && currentMillis - lastTimerUpdate >= timerUpdateInterval) {
-        displayTimerMenu(); // Update the timer display
-        lastTimerUpdate = currentMillis; // Reset the last update time
-    }
+  // Check if the Timer Menu is active and if it's time to update the display
+  if (currentState == MAIN_MENU_TIMER && currentMillis - lastTimerUpdate >= timerUpdateInterval) {
+      displayTimerMenu();              // Update the timer display
+      lastTimerUpdate = currentMillis; // Reset the last update time
+  }
 }
 
 
@@ -71,10 +53,10 @@ void navigateToSubmenu(State submenu) {
 void handle_buttonA_singleClick() {
   // Check if in a submenu
   if ((currentState >= SUB_MENU_WATER_VOLUME && currentState < LAST_SUB_MENU_WATER) ||
-    (currentState >= SUB_MENU_SEATING_HOUR_THRESHOLD && currentState < LAST_SUB_MENU_LONG_SEATING) ||
-    (currentState >= SUB_MENU_UPDATE_DATA && currentState < LAST_SUB_MENU_SYSTEM)) {
-    // Cycling through options within a specific submenu
-    currentOption = (currentOption + 1) % getOptionCount(currentState);
+      (currentState >= SUB_MENU_SEATING_HOUR_THRESHOLD && currentState < LAST_SUB_MENU_LONG_SEATING) ||
+      (currentState >= SUB_MENU_UPDATE_DATA && currentState < LAST_SUB_MENU_SYSTEM)) {
+      // Cycling through options within a specific submenu
+      currentOption = (currentOption + 1) % getOptionCount(currentState);
   } else if (currentState < MAIN_MENU_SYSTEM) {
     // Cycling through main menu items
     currentState = static_cast<State>(currentState + 1);
@@ -148,7 +130,8 @@ void handle_buttonB_singleClick() {
 
       Serial.print("converted volumn value: ");
       Serial.println(selectedWaterVolume); 
-      updatebarCount();
+
+      waterDisplay.setBarCount(selectedWaterVolume/selectedCupSize);
       // ApplyWaterVolumeSetting();         // Apply the setting as needed
       break;
 
@@ -158,7 +141,8 @@ void handle_buttonB_singleClick() {
 
       Serial.print("converted cup size value: ");
       Serial.println(selectedCupSize); 
-      updatebarCount();
+
+      waterDisplay.setBarCount(selectedWaterVolume/selectedCupSize);
       break;
 
     case SUB_MENU_SEATING_HOUR_THRESHOLD:
@@ -223,13 +207,6 @@ void displayCurrentState() {
 }
 
 
-void updatebarCount() {
-  waterDisplay.setBarCount(selectedWaterVolume/selectedCupSize);
-  
-  Serial.print("updated barCount value: ");
-  Serial.println(waterDisplay.getBarCount()); 
-}
-
 void displayTimerMenu() {
     String timerStr = timer.getTimerString(); // The timer string, "00:00"
 
@@ -254,4 +231,26 @@ void displayTimerMenu() {
     tft.println(timerStr);
 }
 
+void tft_init() {
+  tft.init();
+  tft.setRotation(1);
+  tft.setTextSize(3);  
+  tft.fillScreen(TFT_BLACK);
+}
+
+void button_init() {
+  buttonA.begin();
+  buttonB.begin();
+
+  buttonA.setDoubleClickDelay(250);
+  buttonB.setDoubleClickDelay(250);
+
+  buttonA.onPressed(handle_buttonA_singleClick);
+  buttonA.onDoublePressed(handle_buttonA_doubleClick);
+  buttonA.onLongPressed(handle_buttonA_longClick);
+
+  buttonB.onPressed(handle_buttonB_singleClick);
+  buttonB.onDoublePressed(handle_buttonB_doubleClick);
+  buttonB.onLongPressed(handle_buttonB_longClick);
+}
 
