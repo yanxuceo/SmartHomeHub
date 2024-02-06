@@ -1,7 +1,7 @@
 #include "WaterLevelDisplay.h"
 
 WaterLevelDisplay::WaterLevelDisplay(TFT_eSPI &display, int screenWidth, int screenHeight) 
-: tft(display), _screenWidth(screenWidth), _screenHeight(screenHeight), _barCount(0), _gap(4), _currentWaterLevel(0.0) {}
+: tft(display), _screenWidth(screenWidth), _screenHeight(screenHeight), _barCount(0), _gap(4), _currentWaterLevel(0.0), _totalWaterDrinking(0.0) {}
 
 void WaterLevelDisplay::setBarCount(int count) {
   _barCount = count;
@@ -41,6 +41,9 @@ void WaterLevelDisplay::drawBatteryIndicator() {
 }
 
 void WaterLevelDisplay::resetWaterLevel() {
+  //TODO: 2024.02.06 intended to add currentWater drinking to total drinking, but it should be done by flashing w/r
+  _totalWaterDrinking += _currentWaterLevel;
   _currentWaterLevel = 0;
+  
   drawBatteryIndicator();
 }

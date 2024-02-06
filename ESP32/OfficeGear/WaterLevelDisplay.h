@@ -20,7 +20,10 @@ private:
     int _screenHeight;
     int _barCount;
     int _gap;
+    
     float _currentWaterLevel;
+    float _totalWaterDrinking;
+
     static constexpr int _barHeight = 135; // Assuming full height for each bar
     static constexpr uint16_t LIGHT_GREEN = 0x8FEA; // Hexadecimal color code for light green
 };
