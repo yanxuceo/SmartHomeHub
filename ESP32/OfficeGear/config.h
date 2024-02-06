@@ -25,7 +25,7 @@ enum State {
 
 // water tracking submemu options
 const char* waterVolumeOptions[] = {"1L", "1.5L", "2L", "2.5L", "3L"};
-const char* cupSizeOptions[] = {"200ml", "300ml","300ml", "500ml"};
+const char* cupSizeOptions[] = {"200ml", "300ml","400ml", "500ml"};
 static int waterVolumeOptionCount = sizeof(waterVolumeOptions) / sizeof(waterVolumeOptions[0]);
 static int cupSizeOptionCount = sizeof(cupSizeOptions) / sizeof(cupSizeOptions[0]);
 
