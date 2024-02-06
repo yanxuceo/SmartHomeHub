@@ -2,7 +2,10 @@
 
 #include "ButtonHandler.h"
 #include "TimerDisplay.h"
+#include "WaterLevelDisplay.h"
 
+#define SCREENWIDTH     240             // Width of the screen in pixels
+#define SCREENHEIGHT    135             // Height of the screen in pixels
 
 enum State {
   MAIN_MENU_CURRENT_BAR,
@@ -38,7 +41,7 @@ static int seatingHoursCount = sizeof(seatingHours) / sizeof(seatingHours[0]);
 
 // selection variables for water
 static int selectedWaterVolume = 1000; // Index of the selected water volume
-static int selectedCupSize = 200;     // Index of the selected cup size
+static int selectedCupSize = 200;      // Index of the selected cup size
 
 // selection variables for long seating
 static int selectedSeatingHour = 0;
@@ -50,18 +53,8 @@ State currentState = MAIN_MENU_CURRENT_BAR;
 State lastMainMenuState = MAIN_MENU_CURRENT_BAR; // Default to the first main menu item
 
 
-#define LIGHT_GREEN 0x8FEA // Hexadecimal color code for light green
-
-// Adjust these values based on your screen size and desired appearance
-static int barCount = selectedWaterVolume/selectedCupSize;       // Number of total bars
-static int gap = 4;                         // Gap between bars in pixels
-static int screenWidth = 240;               // Width of the screen in pixels
-static int screenHeight = 135;              // Height of the screen in pixels
-static int barHeight = screenHeight;        // Bar height will be full height of the screen
-
-static float currentWaterLevel = 0.0;
-
 OfficeTimer timer;  // Create an OfficeTimer instance
+WaterLevelDisplay waterDisplay(tft, SCREENWIDTH, SCREENHEIGHT);
 
 ButtonHandler buttonA(35); // Example button on pin 35
 ButtonHandler buttonB(0);  // Another button on pin 0
@@ -76,6 +69,9 @@ void setup() {
     tft.setRotation(1);
     tft.setTextSize(3);  
     tft.fillScreen(TFT_BLACK);
+
+    waterDisplay.setBarCount(5); // Set the total number of bars, default 5
+    waterDisplay.setGap(4);      // Set the gap between bars
 
     displayCurrentState();
 
@@ -186,7 +182,7 @@ void handle_buttonB_singleClick() {
   switch (currentState) {
     case MAIN_MENU_CURRENT_BAR:
       Serial.println("Increasing water level...");
-      increaseWaterLevel(0.5);
+      waterDisplay.increaseWaterLevel(0.5);
       displayCurrentState(); // Refresh the display to show any changes.
       break;
 
@@ -235,7 +231,6 @@ void handle_buttonB_singleClick() {
       break;
       // Add other sub-menu cases as needed
   }
-  
 }
 
 void handle_buttonB_doubleClick() {
@@ -257,7 +252,7 @@ void displayCurrentState() {
 
   switch (currentState) {
     case MAIN_MENU_CURRENT_BAR:
-      drawBatteryIndicator(currentWaterLevel, barCount);
+      waterDisplay.drawBatteryIndicator();
       break;
     case MAIN_MENU_TIMER:
       displayTimerMenu();
@@ -285,35 +280,7 @@ void displayCurrentState() {
       break;
   }
 }
-
-void increaseWaterLevel(float incresing_unit) {
-  currentWaterLevel += incresing_unit;    // Increase level by half
-  if (currentWaterLevel > barCount)       // Reset to 0 if it exceeds the bar count
-    currentWaterLevel = 0;            
-}
-     
-void drawBatteryIndicator(float chargeLevel, int barCount) {
-    int barWidth = (screenWidth - (gap * (barCount - 1))) / barCount; 
-
-    for (int i = 0; i < barCount; i++) {
-        if (i < (int)chargeLevel) {
-            // Fully fill the bar
-            tft.fillRect(i * (barWidth + gap), 0, barWidth, barHeight, TFT_GREEN);
-        } else {
-            // Clear the bar if it's not supposed to be filled
-            tft.fillRect(i * (barWidth + gap), 0, barWidth, barHeight, TFT_BLACK);
-
-            if (i < chargeLevel) {
-                // Half fill the bar horizontally
-                tft.fillRect(i * (barWidth + gap), 0, barWidth / 2, barHeight, TFT_GREEN);
-            }
-        }
-        // Draw vertical line for partition, if not the last bar
-        if (i < barCount - 1) {
-            tft.drawLine((i + 1) * (barWidth + gap) - 1, 0, (i + 1) * (barWidth + gap) - 1, barHeight, TFT_WHITE);
-        }
-    }
-}
+  
 
 int convertVolumeToMl(const char* volumeStr) {
     double volume = 0.0; // Use double to handle fractional values
@@ -331,22 +298,11 @@ int convertVolumeToMl(const char* volumeStr) {
 }
 
 void updatebarCount() {
-  barCount = selectedWaterVolume/selectedCupSize;
+  waterDisplay.setBarCount(selectedWaterVolume/selectedCupSize);
   
   Serial.print("updated barCount value: ");
-  Serial.println(barCount); 
+  Serial.println(waterDisplay.getBarCount()); 
 }
-
-/*
-void displayTimerMenu() {
-  String timerStr = timer.getTimerString();
-
-  tft.setTextSize(6);
-  
-  tft.setCursor(0, 0);
-  tft.println(timerStr);
-}
-*/
 
 void displayTimerMenu() {
     String timerStr = timer.getTimerString(); // The timer string, "00:00"
