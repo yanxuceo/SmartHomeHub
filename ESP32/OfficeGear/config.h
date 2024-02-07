@@ -32,7 +32,7 @@ static int waterVolumeOptionCount = sizeof(waterVolumeOptions) / sizeof(waterVol
 static int cupSizeOptionCount = sizeof(cupSizeOptions) / sizeof(cupSizeOptions[0]);
 
 // long seating submenu options
-const char* seatingHours[] = {"15min", "30min", "45min", "60min"};
+const char* seatingHours[] = {"2min", "15min", "30min", "45min", "60min"};
 static int seatingHoursCount = sizeof(seatingHours) / sizeof(seatingHours[0]);
 
 // selection variables for water
@@ -82,6 +82,22 @@ int convertVolumeToMl(const char* volumeStr) {
     }
     
     return static_cast<int>(volume);
+}
+
+
+unsigned int convertTimeToSeconds(const char* timeStr) {
+    unsigned int timeInSeconds = 0; // Initialize time in seconds as unsigned int
+    char* endPtr;
+
+    // Check if the string contains "min" to indicate minutes
+    if (strstr(timeStr, "min")) {
+        // Convert the numeric part of the string to an unsigned integer
+        unsigned int minutes = strtoul(timeStr, &endPtr, 10);
+        // Convert minutes to seconds
+        timeInSeconds = minutes * 60;
+    }
+    
+    return timeInSeconds;
 }
 
 
@@ -157,7 +173,7 @@ void seatingTime_SubmenuLayout(TFT_eSPI &_tft) {
 }
 
 
-void displayTimerMenu(TFT_eSPI &_tft, OfficeTimer &_timer) {
+void displayTimerMenu(TFT_eSPI &_tft, OfficeTimer &_timer, bool alertReached) {
     String timerStr = _timer.getTimerString(); // The timer string, "00:00"
 
     // Set the desired font size for the timer display
@@ -175,7 +191,11 @@ void displayTimerMenu(TFT_eSPI &_tft, OfficeTimer &_timer) {
     _tft.setCursor(startX, startY);
 
     // Optionally, set the text color before drawing
-    _tft.setTextColor(TFT_WHITE, TFT_BLACK); // White text with a black background to overwrite previous text
+    if(alertReached) {
+      _tft.setTextColor(TFT_RED, TFT_BLACK); 
+    } else {
+      _tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    }
 
     // Draw the text on the screen
     _tft.println(timerStr);

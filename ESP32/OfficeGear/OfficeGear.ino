@@ -5,6 +5,7 @@
 
 
 TFT_eSPI tft = TFT_eSPI();   // Initialize TFT
+TFT_eSprite image = TFT_eSprite(&tft); //TODO: needs a test
 
 OfficeTimer timer;           // Create an OfficeTimer instance
 WaterLevelDisplay waterDisplay(tft, SCREENWIDTH, SCREENHEIGHT);
@@ -22,6 +23,7 @@ void setup() {
   waterDisplay.setBarCount(5); // Set the total number of bars, default 5
   waterDisplay.setGap(4);      // Set the gap between bars
 
+  timer.setThreshold(1800);    //seconds, default 30min
   timer.start();
 
   displayCurrentState();
@@ -35,8 +37,8 @@ void loop() {
   unsigned long currentMillis = millis();
   // Check if the Timer Menu is active and if it's time to update the display
   if (currentState == MAIN_MENU_TIMER && currentMillis - lastTimerUpdate >= timerUpdateInterval) {
-      displayTimerMenu(tft, timer);       // Update the timer display
-      lastTimerUpdate = currentMillis;    // Reset the last update time
+      displayTimerMenu(tft, timer, timer.checkThreshold());       // Update the timer display
+      lastTimerUpdate = currentMillis;                            // Reset the last update time
   }
 }
 
@@ -143,8 +145,10 @@ void handle_buttonB_singleClick() {
       break;
 
     case SUB_MENU_SEATING_HOUR_THRESHOLD:
-      Serial.println("Cup Size Selected: " + String(seatingHours[currentOption]));
+      Serial.println("Seating time Selected: " + String(seatingHours[currentOption]));
       selectedSeatingHour = currentOption; // Save the selected cup size
+
+      timer.setThreshold(convertTimeToSeconds(seatingHours[currentOption]));
       break;
 
     case SUB_MENU_UPDATE_DATA:
@@ -177,10 +181,11 @@ void displayCurrentState() {
       waterDisplay.drawBatteryIndicator();
       break;
     case MAIN_MENU_TIMER:
-      displayTimerMenu(tft, timer);
+      displayTimerMenu(tft, timer, false);
       break;
     case MAIN_MENU_SYSTEM:
       tft.setTextSize(3); 
+      tft.setTextColor(TFT_WHITE, TFT_BLACK); 
       tft.drawString("Data Center", 5, 5, 2);
       break;
 
