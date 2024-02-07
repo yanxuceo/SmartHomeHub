@@ -1,5 +1,3 @@
-#include <TFT_eSPI.h>        // Include for the display
-
 #include "ButtonHandler.h"
 #include "TimerDisplay.h"
 #include "WaterLevelDisplay.h"
@@ -8,11 +6,11 @@
 
 TFT_eSPI tft = TFT_eSPI();   // Initialize TFT
 
-OfficeTimer timer;  // Create an OfficeTimer instance
+OfficeTimer timer;           // Create an OfficeTimer instance
 WaterLevelDisplay waterDisplay(tft, SCREENWIDTH, SCREENHEIGHT);
 
-ButtonHandler buttonA(35); // Example button on pin 35
-ButtonHandler buttonB(0);  // Another button on pin 0
+ButtonHandler buttonA(35);   // button A on pin 35
+ButtonHandler buttonB(0);    // button B on pin 0
 
 
 void setup() {
@@ -24,23 +22,21 @@ void setup() {
   waterDisplay.setBarCount(5); // Set the total number of bars, default 5
   waterDisplay.setGap(4);      // Set the gap between bars
 
-  displayCurrentState();
   timer.start();
+
+  displayCurrentState();
 }
 
-unsigned long lastTimerUpdate = 0;
-const unsigned long timerUpdateInterval = 500; // Update the display every 1000 milliseconds (1 second)
 
 void loop() {
   buttonA.update();
   buttonB.update();
 
   unsigned long currentMillis = millis();
-
   // Check if the Timer Menu is active and if it's time to update the display
   if (currentState == MAIN_MENU_TIMER && currentMillis - lastTimerUpdate >= timerUpdateInterval) {
-      displayTimerMenu();              // Update the timer display
-      lastTimerUpdate = currentMillis; // Reset the last update time
+      displayTimerMenu(tft, timer);       // Update the timer display
+      lastTimerUpdate = currentMillis;    // Reset the last update time
   }
 }
 
@@ -103,6 +99,7 @@ void handle_buttonA_longClick() {
 
 void handle_buttonB_singleClick() {
   Serial.println("Button B clicked, confirm!");
+
   switch (currentState) {
     case MAIN_MENU_CURRENT_BAR:
       Serial.println("Increasing water level...");
@@ -180,25 +177,23 @@ void displayCurrentState() {
       waterDisplay.drawBatteryIndicator();
       break;
     case MAIN_MENU_TIMER:
-      displayTimerMenu();
+      displayTimerMenu(tft, timer);
       break;
     case MAIN_MENU_SYSTEM:
-      tft.drawString("System Info", 10, 10, 2);
+      tft.setTextSize(3); 
+      tft.drawString("Data Center", 5, 5, 2);
       break;
 
     // We will add sub-menu displays later
     case SUB_MENU_WATER_VOLUME:
-      tft.drawString("Select Water Volume", 10, 10, 2);
-      tft.drawString(waterVolumeOptions[currentOption], 10, 50, 2);
+      waterTarget_SubmenuLayout(tft);
       break;
     case SUB_MENU_CUP_SIZE:
-      tft.drawString("Select Cup Size", 10, 10, 2);
-      tft.drawString(cupSizeOptions[currentOption], 10, 50, 2);
+      cupSize_SubmenuLayout(tft);
       break;
 
     case SUB_MENU_SEATING_HOUR_THRESHOLD:
-      tft.drawString("Select seating time", 10, 10, 2);
-      tft.drawString(seatingHours[currentOption], 10, 50, 2);
+      seatingTime_SubmenuLayout(tft);
       break;
 
     default:
@@ -206,30 +201,6 @@ void displayCurrentState() {
   }
 }
 
-
-void displayTimerMenu() {
-    String timerStr = timer.getTimerString(); // The timer string, "00:00"
-
-    // Set the desired font size for the timer display
-    tft.setTextSize(6);
-
-    // Calculate the width and height of the text with the current font settings
-    int textWidth = tft.textWidth(timerStr);
-    int textHeight = tft.fontHeight();
-
-    // Calculate the starting X and Y positions to center the text
-    int startX = (tft.width() - textWidth) / 2;
-    int startY = (tft.height() - textHeight) / 2;
-
-    // Set the cursor to the calculated position
-    tft.setCursor(startX, startY);
-
-    // Optionally, set the text color before drawing
-    tft.setTextColor(TFT_WHITE, TFT_BLACK); // White text with a black background to overwrite previous text
-
-    // Draw the text on the screen
-    tft.println(timerStr);
-}
 
 void tft_init() {
   tft.init();

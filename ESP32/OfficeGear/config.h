@@ -1,6 +1,8 @@
 #ifndef CONFIG_h
 #define CONFIG_h
 
+#include <TFT_eSPI.h>                   // Include for the display
+
 #define SCREENWIDTH     240             // Width of the screen in pixels
 #define SCREENHEIGHT    135             // Height of the screen in pixels
 
@@ -24,8 +26,8 @@ enum State {
 
 
 // water tracking submemu options
-const char* waterVolumeOptions[] = {"1L", "1.5L", "2L", "2.5L", "3L"};
-const char* cupSizeOptions[] = {"200ml", "300ml","400ml", "500ml"};
+const char* waterVolumeOptions[] = {"1.5L", "2L", "2.5L", "3L", "3.5L", "4L"};
+const char* cupSizeOptions[] = {"200ml", "250ml", "300ml", "400ml", "500ml", "1000ml"};
 static int waterVolumeOptionCount = sizeof(waterVolumeOptions) / sizeof(waterVolumeOptions[0]);
 static int cupSizeOptionCount = sizeof(cupSizeOptions) / sizeof(cupSizeOptions[0]);
 
@@ -44,7 +46,11 @@ static int selectedSeatingHour = 0;
 static int currentOption = 0;      
 
 State currentState = MAIN_MENU_CURRENT_BAR;
-State lastMainMenuState = MAIN_MENU_CURRENT_BAR; // Default to the first main menu item
+State lastMainMenuState = MAIN_MENU_CURRENT_BAR;      // Default to the first main menu item
+
+// periodically update display
+static unsigned long lastTimerUpdate = 0;
+static const unsigned long timerUpdateInterval = 500; // Update the display every 1000 milliseconds (1 second)
 
 
 int getOptionCount(State state) {
@@ -78,5 +84,101 @@ int convertVolumeToMl(const char* volumeStr) {
     return static_cast<int>(volume);
 }
 
+
+void waterTarget_SubmenuLayout(TFT_eSPI &_tft) {
+  // First, display the "Set target" text at a fixed position
+  _tft.setTextSize(2); 
+  _tft.drawString("Set daily target", 5, 5, 2); 
+
+  // Calculate the width of the text for the selected water volume option
+  int optionTextWidth = _tft.textWidth(waterVolumeOptions[currentOption]);
+
+  // Calculate the starting X position to center the text in the remaining screen space
+  // The "remaining screen space" is considered to be the screen width minus any margins you want to keep
+  int remainingScreenWidth = SCREENWIDTH - 20;                    // Assuming a 10-pixel margin on each side for example
+  int startX = (remainingScreenWidth - optionTextWidth) / 2 + 10; // Adjust the '+ 10' if you change the margin
+
+  // Calculate a Y position for the option text. Assuming you want to place it below the "Set target" text
+  int optionTextY = 60; // This can be adjusted based on your layout
+
+  // Set the text color for the option text if needed
+  // _tft.setTextColor(TFT_WHITE, TFT_BLACK); // Example: White text with black background
+
+  // Display the selected water volume option, centered within the remaining space
+  _tft.drawString(waterVolumeOptions[currentOption], startX, optionTextY, 2);
+}
+
+
+void cupSize_SubmenuLayout(TFT_eSPI &_tft) {
+  // First, display the "Set target" text at a fixed position
+  _tft.setTextSize(2); 
+  _tft.drawString("Set cup size", 5, 5, 2);
+
+  // Calculate the width of the text for the selected water volume option
+  int optionTextWidth = _tft.textWidth(cupSizeOptions[currentOption]);
+
+  // Calculate the starting X position to center the text in the remaining screen space
+  // The "remaining screen space" is considered to be the screen width minus any margins you want to keep
+  int remainingScreenWidth = SCREENWIDTH - 20;                    // Assuming a 10-pixel margin on each side for example
+  int startX = (remainingScreenWidth - optionTextWidth) / 2 + 10; // Adjust the '+ 10' if you change the margin
+
+  // Calculate a Y position for the option text. Assuming you want to place it below the "Set Cup Size" text
+  int optionTextY = 60; // This can be adjusted based on your layout
+
+  // Set the text color for the option text if needed
+  // _tft.setTextColor(TFT_WHITE, TFT_BLACK); // Example: White text with black background
+
+  // Display the selected water volume option, centered within the remaining space
+  _tft.drawString(cupSizeOptions[currentOption], startX, optionTextY, 2);
+}
+
+
+void seatingTime_SubmenuLayout(TFT_eSPI &_tft) {
+  // First, display the "Set a timer" text at a fixed position
+  _tft.setTextSize(2); 
+  _tft.drawString("Set a timer", 5, 5, 2);
+
+  // Calculate the width of the text for the selected water volume option
+  int optionTextWidth = _tft.textWidth(seatingHours[currentOption]);
+
+  // Calculate the starting X position to center the text in the remaining screen space
+  // The "remaining screen space" is considered to be the screen width minus any margins you want to keep
+  int remainingScreenWidth = SCREENWIDTH - 20;                    // Assuming a 10-pixel margin on each side for example
+  int startX = (remainingScreenWidth - optionTextWidth) / 2 + 10; // Adjust the '+ 10' if you change the margin
+
+  // Calculate a Y position for the option text. Assuming you want to place it below the "Set a timer" text
+  int optionTextY = 60; // This can be adjusted based on your layout
+
+  // Set the text color for the option text if needed
+  // _tft.setTextColor(TFT_WHITE, TFT_BLACK); // Example: White text with black background
+
+  // Display the selected water volume option, centered within the remaining space
+  _tft.drawString(seatingHours[currentOption], startX, optionTextY, 2);
+}
+
+
+void displayTimerMenu(TFT_eSPI &_tft, OfficeTimer &_timer) {
+    String timerStr = _timer.getTimerString(); // The timer string, "00:00"
+
+    // Set the desired font size for the timer display
+    _tft.setTextSize(6);
+
+    // Calculate the width and height of the text with the current font settings
+    int textWidth = _tft.textWidth(timerStr);
+    int textHeight = _tft.fontHeight();
+
+    // Calculate the starting X and Y positions to center the text
+    int startX = (_tft.width() - textWidth) / 2;
+    int startY = (_tft.height() - textHeight) / 2;
+
+    // Set the cursor to the calculated position
+    _tft.setCursor(startX, startY);
+
+    // Optionally, set the text color before drawing
+    _tft.setTextColor(TFT_WHITE, TFT_BLACK); // White text with a black background to overwrite previous text
+
+    // Draw the text on the screen
+    _tft.println(timerStr);
+}
 
 #endif
