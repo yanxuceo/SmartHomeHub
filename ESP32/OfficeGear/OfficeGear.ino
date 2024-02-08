@@ -1,6 +1,8 @@
 #include "ButtonHandler.h"
 #include "TimerDisplay.h"
 #include "WaterLevelDisplay.h"
+#include "WiFiTimeSync.h"
+
 #include "config.h"
 
 
@@ -8,6 +10,7 @@ TFT_eSPI tft = TFT_eSPI();   // Initialize TFT
 TFT_eSprite image = TFT_eSprite(&tft); //TODO: needs a test
 
 OfficeTimer timer;           // Create an OfficeTimer instance
+WiFiTimeSync timeSync;
 WaterLevelDisplay waterDisplay(tft, SCREENWIDTH, SCREENHEIGHT);
 
 ButtonHandler buttonA(35);   // button A on pin 35
@@ -19,6 +22,8 @@ void setup() {
   
   tft_init();
   button_init();
+
+  //timeSync.addNetwork("YOUT WiFi SSID", "WiFi Password");
   
   waterDisplay.setBarCount(5); // Set the total number of bars, default 5
   waterDisplay.setGap(4);      // Set the gap between bars
