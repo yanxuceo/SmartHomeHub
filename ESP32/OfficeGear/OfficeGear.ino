@@ -2,6 +2,7 @@
 #include "TimerDisplay.h"
 #include "WaterLevelDisplay.h"
 #include "WiFiTimeSync.h"
+#include "WaterDataManager.h"
 
 #include "config.h"
 
@@ -11,7 +12,10 @@ TFT_eSprite image = TFT_eSprite(&tft); //TODO: needs a test
 
 OfficeTimer timer;           // Create an OfficeTimer instance
 WiFiTimeSync timeSync;
+WaterDataManager waterDataManager;
+
 WaterLevelDisplay waterDisplay(tft, SCREENWIDTH, SCREENHEIGHT);
+
 
 ButtonHandler buttonA(35);   // button A on pin 35
 ButtonHandler buttonB(0);    // button B on pin 0
@@ -23,9 +27,20 @@ void setup() {
   tft_init();
   button_init();
 
+  waterDataManager.begin();
+
+  int barCount_InMem =  waterDataManager.readBarCount();
+  float waterLevel_InMem = waterDataManager.readCurrentWaterLevel();
+
+  Serial.print("read barCount from memory: ");
+  Serial.println(barCount_InMem); 
+
+  Serial.print("read current waterLevel from memory: ");
+  Serial.println(waterLevel_InMem); 
+
   //timeSync.addNetwork("YOUT WiFi SSID", "WiFi Password");
-  
-  waterDisplay.setBarCount(5); // Set the total number of bars, default 5
+  waterDisplay.setCurrentWaterLevel(waterLevel_InMem);
+  waterDisplay.setBarCount(barCount_InMem); // Set the total number of bars, default 5
   waterDisplay.setGap(4);      // Set the gap between bars
 
   timer.setThreshold(1800);    //seconds, default 30min
@@ -105,6 +120,7 @@ void handle_buttonA_longClick() {
 }
 
 void handle_buttonB_singleClick() {
+  int temp_barCount = 0;
   Serial.println("Button B clicked, confirm!");
 
   switch (currentState) {
@@ -112,6 +128,11 @@ void handle_buttonB_singleClick() {
       Serial.println("Increasing water level...");
       waterDisplay.increaseWaterLevel(0.5);
       waterDisplay.drawBatteryIndicator();
+
+      Serial.print("current water level: ");
+      Serial.println(waterDisplay.getCurrentWaterLevel()); 
+
+      waterDataManager.saveCurrentWaterLevel(waterDisplay.getCurrentWaterLevel());
       break;
 
     case MAIN_MENU_TIMER:
@@ -135,8 +156,10 @@ void handle_buttonB_singleClick() {
       Serial.print("converted volumn value: ");
       Serial.println(selectedWaterVolume); 
 
-      waterDisplay.setBarCount(selectedWaterVolume/selectedCupSize);
-      // ApplyWaterVolumeSetting();         // Apply the setting as needed
+      temp_barCount = selectedWaterVolume/selectedCupSize;
+
+      waterDisplay.setBarCount(temp_barCount);
+      waterDataManager.saveBarCount(temp_barCount); //save to flash
       break;
 
     case SUB_MENU_CUP_SIZE:
@@ -146,7 +169,9 @@ void handle_buttonB_singleClick() {
       Serial.print("converted cup size value: ");
       Serial.println(selectedCupSize); 
 
-      waterDisplay.setBarCount(selectedWaterVolume/selectedCupSize);
+      temp_barCount = selectedWaterVolume/selectedCupSize;  
+      waterDisplay.setBarCount(temp_barCount);
+      waterDataManager.saveBarCount(temp_barCount);
       break;
 
     case SUB_MENU_SEATING_HOUR_THRESHOLD:
@@ -169,11 +194,23 @@ void handle_buttonB_doubleClick() {
 }
 
 void handle_buttonB_longClick() {
-  Serial.println("Button B Long Pressed, return to main menu");
+  switch (currentState) {
+    case MAIN_MENU_CURRENT_BAR:
+      waterDisplay.resetWaterLevel();
+         waterDataManager.saveCurrentWaterLevel(0.0f);
+    break;
+
+    case SUB_MENU_WATER_VOLUME:
+    case SUB_MENU_CUP_SIZE:
+    case SUB_MENU_SEATING_HOUR_THRESHOLD:
+    case SUB_MENU_UPDATE_DATA:
+      Serial.println("Button B Long Pressed, return to main menu");
    
-  currentState = lastMainMenuState; // Return to the last main menu state
-  currentOption = 0; 
-  displayCurrentState(); // Refresh the display to show the main menu
+      currentState = lastMainMenuState; // Return to the last main menu state
+      currentOption = 0; 
+      displayCurrentState(); // Refresh the display to show the main menu
+    break;
+  }
 }
 
 
