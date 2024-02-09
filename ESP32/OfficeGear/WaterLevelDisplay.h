@@ -8,11 +8,15 @@ public:
     WaterLevelDisplay(TFT_eSPI &display, int screenWidth, int screenHeight);
     void setBarCount(int count);
     void setGap(int gap);
+    void setCurrentWaterLevel(float waterLevel);
+
     void increaseWaterLevel(float increaseUnit);
     void drawBatteryIndicator();
     void resetWaterLevel();
 
     int getBarCount();
+    float getCurrentWaterLevel();
+
 
 private:
     TFT_eSPI &tft;

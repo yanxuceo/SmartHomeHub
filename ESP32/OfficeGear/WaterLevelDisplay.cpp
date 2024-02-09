@@ -11,6 +11,14 @@ int WaterLevelDisplay::getBarCount() {
   return _barCount;
 }
 
+float WaterLevelDisplay::getCurrentWaterLevel() {
+  return _currentWaterLevel;
+}
+
+void WaterLevelDisplay::setCurrentWaterLevel(float waterLevel) {
+  _currentWaterLevel = waterLevel;
+}
+
 void WaterLevelDisplay::setGap(int gap) {
   _gap = gap;
 }
@@ -18,7 +26,7 @@ void WaterLevelDisplay::setGap(int gap) {
 void WaterLevelDisplay::increaseWaterLevel(float increaseUnit) {
   _currentWaterLevel += increaseUnit;
   if (_currentWaterLevel > _barCount) {
-    _currentWaterLevel = 0; // Reset to 0 if it exceeds the bar count
+    _currentWaterLevel = increaseUnit; // Reset to 0 if it exceeds the bar count
   }
 }
 
@@ -42,7 +50,7 @@ void WaterLevelDisplay::drawBatteryIndicator() {
 
 void WaterLevelDisplay::resetWaterLevel() {
   //TODO: 2024.02.06 intended to add currentWater drinking to total drinking, but it should be done by flashing w/r
-  _totalWaterDrinking += _currentWaterLevel;
+  //_totalWaterDrinking += _currentWaterLevel;
   _currentWaterLevel = 0;
   
   drawBatteryIndicator();
