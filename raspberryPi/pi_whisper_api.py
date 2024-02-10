@@ -1,14 +1,15 @@
 import os
 import numpy as np
 import pyaudio
-import openai
 import wave
 from pydub import AudioSegment
+from openai import OpenAI
+client = OpenAI(api_key =  os.getenv("OPENAI_API_KEY"))
+
 
 
 def get_transcription_from_whisper():
-    # Set your OpenAI API key
-    openai.api_key = os.getenv("OPENAI_API_KEY")
+
 
     # Set the audio parameters
     FORMAT = pyaudio.paInt16
@@ -76,23 +77,14 @@ def get_transcription_from_whisper():
     # Export as a compressed MP3 file with a specific bitrate
     audio_segment.export("output_audio_file.mp3", format="mp3", bitrate="32k")
 
-    # Open the saved file to send to the API
-    with open("output_audio_file.mp3", "rb") as f:
-        transcript = openai.Audio.transcribe("whisper-1", f)
-
+    audio_file = open("output_audio_file.mp3", "rb")
+    transcript = client.audio.transcriptions.create(
+    model="whisper-1",
+    file=audio_file
+    )
     # Return the transcript text
-    return transcript['text']
+    return transcript.text
 
-
-
-def get_transcription_from_audio_file(file_name):
-    openai.api_key = os.getenv("OPENAI_API_KEY")
-
-    with open(file_name, "rb") as f:
-        transcript = openai.Audio.transcribe("whisper-1", f)
-
-    # Return the transcript text
-    return transcript['text']
 
 
 
