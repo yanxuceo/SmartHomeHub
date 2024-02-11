@@ -1,0 +1,3 @@
+[submodule "ESP32/OfficeGear"]
+	path = ESP32/OfficeGear
+	url = https://github.com/yanxuceo/OfficeGear
