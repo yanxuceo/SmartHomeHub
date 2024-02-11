@@ -59,3 +59,8 @@ My Notion page:
 #### Test OpenAI Function Calling
 Check out what is [Function Calling](https://openai.com/blog/function-calling-and-other-api-updates).
 This [blog](https://zhuanlan.zhihu.com/p/637002733?utm_id=0) helped me.
+
+
+
+## License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
